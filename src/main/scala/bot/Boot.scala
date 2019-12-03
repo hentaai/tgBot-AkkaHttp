@@ -33,10 +33,9 @@ object Boot extends App with Serializer {
     case Success(value) =>
       log.info(s"Response: $value")
   }
-  val hangmanActor = system.actorOf(HangmanActor.props)
-  val telegramActor = system.actorOf(TelegramActor.props(token, hangmanActor))
+  val telegramActor = system.actorOf(TelegramActor.props(token))
 
-  val schedule = system.scheduler.schedule(0.seconds, 10.seconds, telegramActor, TelegramActor.Refresh)
+  val schedule = system.scheduler.schedule(0.seconds, 5.seconds, telegramActor, TelegramActor.Refresh)
 
 
   // Telegram (actor) -- only telegrams
@@ -45,23 +44,4 @@ object Boot extends App with Serializer {
   // Hangman (actor) -- game logic only (does not know about Telegram), but knows about telegram actor
   // Hangman does not about HTTP
 
-
-//  val message: TelegramMessage = TelegramMessage(400757313, "Hello world from movie service")
-//  log.info(Marshal(message).to[RequestEntity].toString)
-//
-//  val httpReq = Marshal(message).to[RequestEntity].flatMap { entity =>
-//    val request = HttpRequest(HttpMethods.POST, s"https://api.telegram.org/bot$token/sendMessage", Nil, entity)
-//    log.debug("Request: {}", request)
-//    Http().singleRequest(request)
-//  }
-//
-//
-//  httpReq.onComplete {
-//    case Success(value) =>
-//      log.info(s"Response: $value")
-//      value.discardEntityBytes()
-//
-//    case Failure(exception) =>
-//      log.error("error")
-//  }
 }

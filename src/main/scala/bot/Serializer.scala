@@ -37,4 +37,6 @@ object MyJsonProtocol extends DefaultJsonProtocol with SprayJsonSupport {
       }
     }
   }
+  implicit val messageFormat: RootJsonFormat[TelegramMessage] = jsonFormat2(TelegramMessage)
+
 }

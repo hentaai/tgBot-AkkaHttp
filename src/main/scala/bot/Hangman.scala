@@ -4,15 +4,17 @@ import scala.util.Random
 
 
 case object Hangman{
-  def first:String = """  +---+
-                       |  |   |
-                       |      |
-                       |      |
-                       |      |
-                       |      |
-                       |=========""".stripMargin
+  val first: String = """
+                        |  +---+
+                        |  |   |
+                        |      |
+                        |      |
+                        |      |
+                        |      |
+                        |=========""".stripMargin('|')
 
-  def second: String = """  +---+
+  val second: String = """
+                         |  +---+
                          |  |   |
                          |  O   |
                          |      |
@@ -20,7 +22,8 @@ case object Hangman{
                          |      |
                          |=========""".stripMargin
 
-  def third: String = """  +---+
+  val third: String = """
+                        |  +---+
                         |  |   |
                         |  O   |
                         |  |   |
@@ -28,7 +31,8 @@ case object Hangman{
                         |      |
                         |=========""".stripMargin
 
-  def fourth: String = """  +---+
+  val fourth: String = """
+                         |  +---+
                          |  |   |
                          |  O   |
                          | /|   |
@@ -36,7 +40,8 @@ case object Hangman{
                          |      |
                          |=========""".stripMargin
 
-  def fifth: String = """  +---+
+  val fifth: String = """
+                        |  +---+
                         |  |   |
                         |  O   |
                         | /|\  |
@@ -44,7 +49,8 @@ case object Hangman{
                         |      |
                         |=========""".stripMargin
 
-  def sixth: String = """  +---+
+  val sixth: String = """
+                        |  +---+
                         |  |   |
                         |  O   |
                         | /|\  |
@@ -52,7 +58,8 @@ case object Hangman{
                         |      |
                         |=========""".stripMargin
 
-  def seventh: String = """  +---+
+  val seventh: String = """
+                          |  +---+
                           |  |   |
                           |  O   |
                           | /|\  |
@@ -72,12 +79,13 @@ case object Hangman{
     words(random.nextInt(words.length))
   }
   def getGallows(wrongCount: Int) = wrongCount match {
-    case 1 => second
-    case 2 => third
-    case 3 => fourth
-    case 4 => fifth
-    case 5 => sixth
-    case 6 => seventh
+    case 1 => first
+    case 2 => second
+    case 3 => third
+    case 4 => fourth
+    case 5 => fifth
+    case 6 => sixth
+    case 7 => seventh
   }
 }
 

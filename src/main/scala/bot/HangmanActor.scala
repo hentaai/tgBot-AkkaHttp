@@ -1,55 +1,59 @@
 package bot
 
-import akka.actor.{Actor, ActorLogging, FSM, Props}
+import akka.actor.{Actor, ActorLogging, ActorRef, FSM, Props}
 
 case object HangmanActor{
-  def props = Props(new HangmanActor)
+  def props(telegramActor: ActorRef) = Props(new HangmanActor(telegramActor))
 
   case object StartCommand
   case class Letter(msg: String)
-  def board(missedLetters: String): String = s"${Hangman.getGallows(missedLetters.length)}\nMissed: $missedLetters"
+  def board(missedLetters: String): String = s"${Hangman.getGallows(missedLetters.length)}\nMissed: ${missedLetters.mkString(", ")}"
   def spaces(word: String, correctLetters: String) = word.map{ letter =>
     if (correctLetters.contains(letter)) letter else "_"
   }.mkString(" ")
 }
-class HangmanActor extends Actor with ActorLogging{
+class HangmanActor(telegramActor: ActorRef) extends FSM[State, Data]{
   import TelegramActor._
   import HangmanActor._
 
-  var missedLetters: String = ""
-  val secretWord = Hangman.getWord
-  var correctLetters: String = ""
+  startWith(Idle, Uninitialized)
 
-  override def receive: Receive = {
-    case StartCommand =>
-      sender() ! Message(Hangman.first)
-      sender() ! Message(spaces(secretWord, correctLetters))
-    case Letter(l) =>
-      if (secretWord.contains(l)) {
-        correctLetters += l
-        sender() ! Message(spaces(secretWord, correctLetters))
+  when(Idle) {
+    case Event(StartCommand, Uninitialized) =>
+      val word = Hangman.getWord
+      telegramActor ! Message(s"GAME STARTED, GOOD LUCK :)\n${spaces(word, "")}")
+      goto(Playing).using(Board(word, "", ""))
+  }
+
+  when(Playing) {
+    case Event(Letter(l), Board(word, correct, missed)) =>
+      if (correct.contains(l)){
+        telegramActor ! Message(spaces(word, correct))
+        stay()
+      }
+      else if (word.contains(l)){
+        val correctLetters = correct + l
+        correctLetters.length match {
+          case length if length == word.length =>
+            telegramActor ! Message(s"${spaces(word, correctLetters)}\nYOU WON!")
+            goto(Idle).using(Uninitialized)
+          case _ =>
+            telegramActor ! Message(spaces(word, correctLetters))
+            stay.using(Board(word, correctLetters, missed))
+        }
       }
       else{
-        missedLetters += l
-        sender() ! Message(board(missedLetters))
+        val missedLetters = missed + l
+        missedLetters.length match {
+          case 7 =>
+            telegramActor ! Message(s"${Hangman.seventh}\nTHE MAN IS DEAD, YOU LOST :C\nTHE WORD WAS: $word")
+            goto(Idle).using(Uninitialized)
+          case _ =>
+            telegramActor ! Message(board(missedLetters))
+            stay.using(Board(word, correct, missedLetters))
+        }
       }
   }
 
-
-  //  startWith(Idle, Uninitialized)
-//
-//  when(Idle) {
-//    case Event(StartCommand, Uninitialized) =>
-//      goto(Playing).using(Gallows(Hangman.first))
-//  }
-//
-//  onTransition{
-//    Idle -> Playing(0)
-//  }
-//
-//  when(Playing(0)) {
-//    case Event(HangmanMessage(msg), Gallows(word)) =>
-//
-//  }
-//    case Hangman.first
+  initialize()
 }
